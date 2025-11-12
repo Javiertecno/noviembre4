@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS Intermedio - Lista de Tareas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .error {
+      border-color: #e74c3c !important;
+    }
+    .error-msg {
+      color: #e74c3c;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #777;
+      text-transform: uppercase;
+    }
+    #listaTareas {
+      margin-top: 20px;
+    }
+    .tarea-item {
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+    }
+    .tarea-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .tarea-item.completada {
+      opacity: 0.6;
+      border-left-color: #2ecc71;
+      background: #e8f8f5;
+    }
+    .tarea-item.completada .tarea-texto {
+      text-decoration: line-through;
+      color: #888;
+    }
+    .tarea-contenido {
+      flex: 1;
+    }
+    .tarea-texto {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    .tarea-prioridad {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .prioridad-alta { background: #fee; color: #e74c3c; }
+    .prioridad-media { background: #fef5e7; color: #f39c12; }
+    .prioridad-baja { background: #e8f8f5; color: #2ecc71; }
+    .tarea-acciones {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-accion {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-completar {
+      background: #2ecc71;
+      color: white;
+    }
+    .btn-completar:hover {
+      background: #27ae60;
+    }
+    .btn-eliminar {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-eliminar:hover {
+      background: #c0392b;
+    }
+    .filtros {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      justify-content: center;
+    }
+    .filtro-btn {
+      padding: 8px 16px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .filtro-btn:hover {
+      border-color: #667eea;
+    }
+    .filtro-btn.activo {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Gestor de Tareas Avanzado</h1>
+    
+    <!-- Estadísticas -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number" id="totalTareas">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="tareasCompletadas">0</div>
+        <div class="stat-label">Completadas</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="tareasPendientes">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form id="formularioTarea">
+      <div class="form-group">
+        <label for="nombreTarea">Nombre de la tarea *</label>
+        <input type="text" id="nombreTarea" placeholder="Ej: Estudiar JavaScript">
+        <div class="error-msg" id="errorNombre">El nombre es obligatorio (mínimo 3 caracteres)</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="prioridad">Prioridad</label>
+        <select id="prioridad">
+          <option value="baja">🟢 Baja</option>
+          <option value="media" selected>🟡 Media</option>
+          <option value="alta">🔴 Alta</option>
+        </select>
+      </div>
+      
+      <button type="submit">➕ Agregar Tarea</button>
+    </form>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <button class="filtro-btn activo" data-filtro="todas" onclick="filtrarTareas('todas')">Todas</button>
+      <button class="filtro-btn" data-filtro="pendientes" onclick="filtrarTareas('pendientes')">Pendientes</button>
+      <button class="filtro-btn" data-filtro="completadas" onclick="filtrarTareas('completadas')">Completadas</button>
+    </div>
+
+    <!-- Lista de tareas -->
+    <div id="listaTareas"></div>
+  </div>
+
+  <script>
+    // ========== VARIABLES GLOBALES ==========
+    // Array para almacenar todas las tareas
+    let tareas = [];
+    let filtroActual = 'todas';
+
+    // ========== CARGAR TAREAS DESDE LOCALSTORAGE AL INICIAR ==========
+    window.addEventListener('DOMContentLoaded', () => {
+      cargarTareasLocalStorage();
+      actualizarVista();
+    });
+
+    // ========== MANEJO DEL FORMULARIO ==========
+    document.getElementById('formularioTarea').addEventListener('submit', function(e) {
+      e.preventDefault(); // Evita que el formulario recargue la página
+      
+      const nombreInput = document.getElementById('nombreTarea');
+      const prioridadSelect = document.getElementById('prioridad');
+      const errorMsg = document.getElementById('errorNombre');
+      
+      // Validación: nombre debe tener al menos 3 caracteres
+      if (nombreInput.value.trim().length < 3) {
+        nombreInput.classList.add('error');
+        errorMsg.style.display = 'block';
+        return; // Sale de la función si hay error
+      }
+      
+      // Limpiar errores si la validación pasa
+      nombreInput.classList.remove('error');
+      errorMsg.style.display = 'none';
+      
+      // Crear objeto tarea con ID único
+      const nuevaTarea = {
+        id: Date.now(), // Usa timestamp como ID único
+        nombre: nombreInput.value.trim(),
+        prioridad: prioridadSelect.value,
+        completada: false,
+        fecha: new Date().toLocaleDateString()
+      };
+      
+      // Agregar al array de tareas
+      tareas.push(nuevaTarea);
+      
+      // Guardar en localStorage
+      guardarTareasLocalStorage();
+      
+      // Actualizar la vista
+      actualizarVista();
+      
+      // Limpiar formulario
+      nombreInput.value = '';
+      prioridadSelect.value = 'media';
+      nombreInput.focus();
+    });
+
+    // ========== FUNCIONES DE MANIPULACIÓN DE TAREAS ==========
+    function completarTarea(id) {
+      // Buscar la tarea por ID y cambiar su estado
+      const tarea = tareas.find(t => t.id === id);
+      if (tarea) {
+        tarea.completada = !tarea.completada;
+        guardarTareasLocalStorage();
+        actualizarVista();
+      }
+    }
+
+    function eliminarTarea(id) {
+      // Confirmar eliminación
+      if (confirm('¿Estás seguro de eliminar esta tarea?')) {
+        // Filtrar todas las tareas excepto la que tiene este ID
+        tareas = tareas.filter(t => t.id !== id);
+        guardarTareasLocalStorage();
+        actualizarVista();
+      }
+    }
+
+    function filtrarTareas(filtro) {
+      filtroActual = filtro;
+      
+      // Actualizar botones activos
+      document.querySelectorAll('.filtro-btn').forEach(btn => {
+        btn.classList.remove('activo');
+      });
+      document.querySelector(`[data-filtro="${filtro}"]`).classList.add('activo');
+      
+      actualizarVista();
+    }
+
+    // ========== FUNCIONES DE VISTA ==========
+    function actualizarVista() {
+      renderizarTareas();
+      actualizarEstadisticas();
+    }
+
+    function renderizarTareas() {
+      const contenedor = document.getElementById('listaTareas');
+      
+      // Filtrar tareas según el filtro actual
+      let tareasFiltradas = tareas;
+      if (filtroActual === 'pendientes') {
+        tareasFiltradas = tareas.filter(t => !t.completada);
+      } else if (filtroActual === 'completadas') {
+        tareasFiltradas = tareas.filter(t => t.completada);
+      }
+      
+      // Limpiar contenedor
+      contenedor.innerHTML = '';
+      
+      // Si no hay tareas, mostrar mensaje
+      if (tareasFiltradas.length === 0) {
+        contenedor.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No hay tareas para mostrar</p>';
+        return;
+      }
+      
+      // Crear elementos HTML para cada tarea
+      tareasFiltradas.forEach(tarea => {
+        const div = document.createElement('div');
+        div.className = `tarea-item ${tarea.completada ? 'completada' : ''}`;
+        
+        div.innerHTML = `
+          <div class="tarea-contenido">
+            <div class="tarea-texto">${tarea.nombre}</div>
+            <span class="tarea-prioridad prioridad-${tarea.prioridad}">${tarea.prioridad}</span>
+            <small style="color:#999; margin-left:10px;">${tarea.fecha}</small>
+          </div>
+          <div class="tarea-acciones">
+            <button class="btn-accion btn-completar" onclick="completarTarea(${tarea.id})">
+              ${tarea.completada ? '↩️ Deshacer' : '✓ Completar'}
+            </button>
+            <button class="btn-accion btn-eliminar" onclick="eliminarTarea(${tarea.id})">
+              🗑️ Eliminar
+            </button>
+          </div>
+        `;
+        
+        contenedor.appendChild(div);
+      });
+    }
+
+    function actualizarEstadisticas() {
+      const total = tareas.length;
+      const completadas = tareas.filter(t => t.completada).length;
+      const pendientes = total - completadas;
+      
+      document.getElementById('totalTareas').textContent = total;
+      document.getElementById('tareasCompletadas').textContent = completadas;
+      document.getElementById('tareasPendientes').textContent = pendientes;
+    }
+
+    // ========== FUNCIONES DE LOCALSTORAGE ==========
+    function guardarTareasLocalStorage() {
+      // Convertir array a JSON y guardar en localStorage
+      localStorage.setItem('tareas', JSON.stringify(tareas));
+    }
+
+    function cargarTareasLocalStorage() {
+      // Recuperar tareas del localStorage
+      const tareasGuardadas = localStorage.getItem('tareas');
+      if (tareasGuardadas) {
+        tareas = JSON.parse(tareasGuardadas);
+      }
+    }
+
+    // ========== LIMPIAR ERRORES AL ESCRIBIR ==========
+    document.getElementById('nombreTarea').addEventListener('input', function() {
+      if (this.value.trim().length >= 3) {
+        this.classList.remove('error');
+        document.getElementById('errorNombre').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
