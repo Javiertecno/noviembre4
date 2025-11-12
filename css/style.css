@@ -1,0 +1,54 @@
+.divider-new {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  margin-top: 2.8rem;
+  margin-bottom: 2.8rem;
+}
+
+.divider-new:before {
+  margin: 0 1.5rem 0 0;
+}
+
+.divider-new:after {
+  margin: 0 0 0 1.5rem;
+}
+
+.divider-new:after,
+.divider-new:before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #000;
+}
+
+body {
+  color: #000;
+}
+
+.link-black {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: 0.3s;
+}
+
+.link-black:hover {
+  text-decoration-color: #000;
+}
+
+.mt-n6 {
+  margin-top: -30px;
+}
+.btn-floating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.btn-floating.btn-lg .far {
+  padding-top: 1px;
+  padding-left: 1px;
+  color: #000;
+}
+.navbar-light .navbar-nav .nav-link {
+  colo
