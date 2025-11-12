@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS + Bootstrap - Galería Interactiva</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 30px 0;
+    }
+    .card-producto {
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      height: 100%;
+    }
+    .card-producto:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .card-img-top {
+      height: 200px;
+      object-fit: cover;
+      background: linear-gradient(45deg, #e9ecef, #f8f9fa);
+    }
+    .badge-carrito {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 12px;
+    }
+    .toast-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 1050;
+    }
+    .stats-badge {
+      font-size: 14px;
+      padding: 8px 15px;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR CON CARRITO -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">🛒 Tienda JS</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <button class="btn btn-outline-light position-relative" data-bs-toggle="offcanvas" data-bs-target="#carritoOffcanvas">
+              🛒 Carrito
+              <span class="badge bg-danger badge-carrito" id="contadorCarrito">0</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <div class="container mt-5 pt-4">
+    <!-- ENCABEZADO CON ESTADÍSTICAS -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card bg-white shadow-sm">
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-md-3">
+                <h5>Productos</h5>
+                <span class="badge bg-primary stats-badge" id="totalProductos">0</span>
+              </div>
+              <div class="col-md-3">
+                <h5>En Carrito</h5>
+                <span class="badge bg-success stats-badge" id="productosCarrito">0</span>
+              </div>
+              <div class="col-md-3">
+                <h5>Total</h5>
+                <span class="badge bg-warning stats-badge text-dark" id="totalPrecio">$0</span>
+              </div>
+              <div class="col-md-3">
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#infoModal">
+                  ℹ️ Información
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTROS Y BÚSQUEDA -->
+    <div class="row mb-4">
+      <div class="col-md-6 mb-3">
+        <input type="text" class="form-control" id="buscadorProductos" placeholder="🔍 Buscar productos...">
+      </div>
+      <div class="col-md-6 mb-3">
+        <select class="form-select" id="filtroCategoria">
+          <option value="todos">Todas las categorías</option>
+          <option value="electronica">Electrónica</option>
+          <option value="ropa">Ropa</option>
+          <option value="hogar">Hogar</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GALERÍA DE PRODUCTOS -->
+    <div class="row" id="galeriaProductos">
+      <!-- Los productos se generan dinámicamente con JavaScript -->
+    </div>
+  </div>
+
+  <!-- OFFCANVAS CARRITO -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="carritoOffcanvas">
+    <div class="offcanvas-header bg-dark text-white">
+      <h5 class="offcanvas-title">🛒 Tu Carrito</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="listaCarrito"></div>
+      <hr>
+      <div class="d-flex justify-content-between mb-3">
+        <strong>Total:</strong>
+        <strong id="totalCarritoOffcanvas">$0</strong>
+      </div>
+      <button class="btn btn-success w-100 mb-2" onclick="finalizarCompra()">
+        💳 Finalizar Compra
+      </button>
+      <button class="btn btn-outline-danger w-100" onclick="vaciarCarrito()">
+        🗑️ Vaciar Carrito
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL INFORMACIÓN -->
+  <div class="modal fade" id="infoModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">📘 Guía de Uso</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <h6>JavaScript + Bootstrap</h6>
+          <p>Este ejemplo demuestra:</p>
+          <ul>
+            <li><strong>Componentes Bootstrap:</strong> Navbar, Offcanvas, Modal, Toast, Cards</li>
+            <li><strong>JavaScript:</strong> Manipulación DOM, eventos, localStorage</li>
+            <li><strong>Filtrado y búsqueda:</strong> Búsqueda en tiempo real</li>
+            <li><strong>Carrito dinámico:</strong> Agregar/eliminar productos</li>
+            <li><strong>Toast notifications:</strong> Mensajes de confirmación</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE TOASTS -->
+  <div class="toast-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  
+  <script>
+    // ========== DATOS DE PRODUCTOS ==========
+    const productos = [
+      { id: 1, nombre: 'Laptop HP', precio: 899, categoria: 'electronica', img: '💻' },
+      { id: 2, nombre: 'Mouse Inalámbrico', precio: 25, categoria: 'electronica', img: '🖱️' },
+      { id: 3, nombre: 'Teclado Mecánico', precio: 79, categoria: 'electronica', img: '⌨️' },
+      { id: 4, nombre: 'Camiseta Deportiva', precio: 35, categoria: 'ropa', img: '👕' },
+      { id: 5, nombre: 'Zapatillas Running', precio: 120, categoria: 'ropa', img: '👟' },
+      { id: 6, nombre: 'Lámpara LED', precio: 45, categoria: 'hogar', img: '💡' },
+      { id: 7, nombre: 'Cafetera', precio: 89, categoria: 'hogar', img: '☕' },
+      { id: 8, nombre: 'Auriculares Bluetooth', precio: 65, categoria: 'electronica', img: '🎧' }
+    ];
+
+    // ========== CARRITO (ARRAY PARA ALMACENAR PRODUCTOS) ==========
+    let carrito = [];
+
+    // ========== INICIALIZACIÓN ==========
+    window.addEventListener('DOMContentLoaded', () => {
+      cargarCarritoLocalStorage();
+      renderizarProductos(productos);
+      actualizarEstadisticas();
+      configurarEventos();
+    });
+
+    // ========== CONFIGURAR EVENTOS ==========
+    function configurarEventos() {
+      // Buscador en tiempo real
+      document.getElementById('buscadorProductos').addEventListener('input', function(e) {
+        const termino = e.target.value.toLowerCase();
+        const productosFiltrados = productos.filter(p => 
+          p.nombre.toLowerCase().includes(termino)
+        );
+        renderizarProductos(productosFiltrados);
+      });
+
+      // Filtro por categoría
+      document.getElementById('filtroCategoria').addEventListener('change', function(e) {
+        const categoria = e.target.value;
+        const productosFiltrados = categoria === 'todos' 
+          ? productos 
+          : productos.filter(p => p.categoria === categoria);
+        renderizarProductos(productosFiltrados);
+      });
+    }
+
+    // ========== RENDERIZAR PRODUCTOS ==========
+    function renderizarProductos(listaProductos) {
+      const contenedor = document.getElementById('galeriaProductos');
+      contenedor.innerHTML = '';
+
+      if (listaProductos.length === 0) {
+        contenedor.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <div class="alert alert-info">
+              No se encontraron productos
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      listaProductos.forEach(producto => {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 col-lg-3 mb-4';
+        
+        col.innerHTML = `
+          <div class="card card-producto">
+            <div class="card-img-top d-flex align-items-center justify-content-center" 
+                 style="font-size: 80px;">
+              ${producto.img}
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">${producto.nombre}</h5>
+              <p class="card-text">
+                <span class="badge bg-secondary">${producto.categoria}</span>
+              </p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="h5 mb-0 text-primary">$${producto.precio}</span>
+                <button class="btn btn-sm btn-primary" onclick="agregarAlCarrito(${producto.id})">
+                  ➕ Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        contenedor.appendChild(col);
+      });
+
+      // Actualizar contador total de productos
+      document.getElementById('totalProductos').textContent = listaProductos.length;
+    }
+
+    // ========== AGREGAR AL CARRITO ==========
+    function agregarAlCarrito(idProducto) {
+      const producto = productos.find(p => p.id === idProducto);
+      
+      // Verificar si ya existe en el carrito
+      const itemExistente = carrito.find(item => item.id === idProducto);
+      
+      if (itemExistente) {
+        itemExistente.cantidad++;
+      } else {
+        carrito.push({ ...producto, cantidad: 1 });
+      }
+      
+      guardarCarritoLocalStorage();
+      actualizarEstadisticas();
+      renderizarCarrito();
+      mostrarToast(`${producto.nombre} agregado al carrito`, 'success');
+    }
+
+    // ========== ELIMINAR DEL CARRITO ==========
+    function eliminarDelCarrito(idProducto) {
+      const item = carrito.find(item => item.id === idProducto);
+      
+      if (item) {
+        if (item.cantidad > 1) {
+          item.cantidad--;
+        } else {
+          carrito = carrito.filter(item => item.id !== idProducto);
+        }
+        
+        guardarCarritoLocalStorage();
+        actualizarEstadisticas();
+        renderizarCarrito();
+        mostrarToast('Producto eliminado', 'warning');
+      }
+    }
+
+    // ========== VACIAR CARRITO ==========
+    function vaciarCarrito() {
+      if (carrito.length === 0) {
+        mostrarToast('El carrito ya está vacío', 'info');
+        return;
+      }
+      
+      if (confirm('¿Estás seguro de vaciar el carrito?')) {
+        carrito = [];
+        guardarCarritoLocalStorage();
+        actualizarEstadisticas();
+        renderizarCarrito();
+        mostrarToast('Carrito vaciado', 'info');
+      }
+    }
+
+    // ========== FINALIZAR COMPRA ==========
+    function finalizarCompra() {
+      if (carrito.length === 0) {
+        mostrarToast('El carrito está vacío', 'warning');
+        return;
+      }
+      
+      const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+      
+      // Cerrar offcanvas
+      const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('carritoOffcanvas'));
+      if (offcanvas) offcanvas.hide();
+      
+      // Mostrar mensaje de éxito
+      setTimeout(() => {
+        alert(`¡Compra exitosa! Total: $${total}\n\nGracias por tu compra 🎉`);
+        carrito = [];
+        guardarCarritoLocalStorage();
+        actualizarEstadisticas();
+        renderizarCarrito();
+      }, 300);
+    }
+
+    // ========== RENDERIZAR CARRITO ==========
+    function renderizarCarrito() {
+      const contenedor = document.getElementById('listaCarrito');
+      contenedor.innerHTML = '';
+
+      if (carrito.length === 0) {
+        contenedor.innerHTML = '<p class="text-center text-muted">Carrito vacío</p>';
+        document.getElementById('totalCarritoOffcanvas').textContent = '$0';
+        return;
+      }
+
+      carrito.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'card mb-2';
+        div.innerHTML = `
+          <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>${item.nombre}</strong><br>
+                <small>$${item.precio} × ${item.cantidad}</small>
+              </div>
+              <div>
+                <button class="btn btn-sm btn-outline-danger" onclick="eliminarDelCarrito(${item.id})">
+                  ➖
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+
+      const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+      document.getElementById('totalCarritoOffcanvas').textContent = `$${total}`;
+    }
+
+    // ========== ACTUALIZAR ESTADÍSTICAS ==========
+    function actualizarEstadisticas() {
+      const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+      const totalPrecio = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+      
+      document.getElementById('contadorCarrito').textContent = totalItems;
+      document.getElementById('productosCarrito').textContent = totalItems;
+      document.getElementById('totalPrecio').textContent = `$${totalPrecio}`;
+    }
+
+    // ========== TOAST NOTIFICATIONS (BOOTSTRAP) ==========
+    function mostrarToast(mensaje, tipo = 'info') {
+      const colores = {
+        success: 'bg-success',
+        warning: 'bg-warning',
+        danger: 'bg-danger',
+        info: 'bg-info'
+      };
+
+      const toastHTML = `
+        <div class="toast align-items-center text-white ${colores[tipo]} border-0" role="alert">
+          <div class="d-flex">
+            <div class="toast-body">
+              ${mensaje}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      `;
+
+      const container = document.querySelector('.toast-container');
+      container.insertAdjacentHTML('beforeend', toastHTML);
+      
+      const toastElement = container.lastElementChild;
+      const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+      toast.show();
+
+      // Eliminar del DOM después de ocultarse
+      toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+      });
+    }
+
+    // ========== LOCALSTORAGE ==========
+    function guardarCarritoLocalStorage() {
+      localStorage.setItem('carrito', JSON.stringify(carrito));
+    }
+
+    function cargarCarritoLocalStorage() {
+      const carritoGuardado = localStorage.getItem('carrito');
+      if (carritoGuardado) {
+        carrito = JSON.parse(carritoGuardado);
+        renderizarCarrito();
+      }
+    }
+  </script>
+</body>
+</html>
